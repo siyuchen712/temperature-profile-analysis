@@ -1,0 +1,36 @@
+QMainWindow { 
+   background-color: #323232; 
+   color: #dddddd; 
+} 
+QTreeView { 
+   background-color: #717171; 
+   color: #dddddd; 
+   alternate-background-color: #303030; 
+} QListView { 
+   background-color: #303030; 
+   color: #dddddd; 
+ } 
+ QTextEdit { 
+   background-color: #717171; 
+   color: #dddddd; 
+ } 
+QScrollBar:horizontal {
+   height: 20px; 
+ }
+QScrollBar:vertical {
+   width: 20px; 
+ }
+QTabWidget::pane {
+   border-top: 2px solid #C2C7CB;
+ }
+.QLabel { 
+   color: dimgrey;  
+} 
+ 
+.QCheckBox { 
+   color: white;  
+} 
+ 
+.QRadioButton{ 
+   color:white; 
+}
