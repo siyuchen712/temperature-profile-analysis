@@ -11,10 +11,10 @@ import plotly.graph_objs as go
 from operator import itemgetter
 import itertools
 
-from re_and_globals import *
+from core.re_and_globals import *
 
 
-def single_channel_analysis(df, channel, ambient):
+def single_channel_analysis(df, channel, ambient, upper_threshold, lower_threshold):
 	df_summary = pd.DataFrame()
 
 	####Test for one channel
@@ -61,8 +61,8 @@ def single_channel_analysis(df, channel, ambient):
 	    ls_cycle.append(ls_cycle_component)
 	    
 	    #The index of all the points of temp out of threshold
-	    High_index = ls_cycle[i][channel][ls_cycle[i][channel]> UPPER_THRESHOLD].index.tolist()
-	    Low_index = ls_cycle[i][channel][ls_cycle[i][channel]< LOWER_THRESHOLD].index.tolist()
+	    High_index = ls_cycle[i][channel][ls_cycle[i][channel]> upper_threshold].index.tolist()
+	    Low_index = ls_cycle[i][channel][ls_cycle[i][channel]< lower_threshold].index.tolist()
 	    point_index = []
 	    for m in range(int(len(Low_index))):
 	        point_index.append(Low_index[m])
@@ -127,7 +127,7 @@ def single_channel_analysis(df, channel, ambient):
 	    selected_channel['duration_minutes'] = selected_channel['duration']/60
 	    #temp_range
 	    selected_channel['ramp_temp'] = pd.Series(0, index=result.index)
-	    selected_channel['ramp_temp'] = selected_channel[[2]].shift(-1) - selected_channel[[2]]
+	    selected_channel['ramp_temp'] = selected_channel[[5]].shift(-1) - selected_channel[[5]]
 	    #RAMP
 	    selected_channel['ramp_rate'] = pd.Series(0, index=result.index)
 	    selected_channel['ramp_rate'] = selected_channel['ramp_temp']*60/selected_channel['duration']
@@ -320,4 +320,4 @@ def single_channel_analysis(df, channel, ambient):
 	        uncontn_result_each_cycle[x] = result_each_cycle
 	        uncontn_summary[x] = df_summary
 	
-	return df_summary
+	return result_each_cycle, df_summary

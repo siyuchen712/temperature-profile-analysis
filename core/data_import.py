@@ -4,26 +4,38 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 import time
 import re
-##from plotly import __version__
-##from plotly.offline import download_plotlyjs, init_notebook_mode, plot, iplot
 import plotly.plotly as py
 import plotly.graph_objs as go
 from operator import itemgetter
 import itertools
 
-# from core.plot import *
-# from core.analysis import *
-
-from plot import *
-from analysis import *
-from re_and_globals import *
-
-## init_notebook_mode(connected=True)  ## ???
+from core.plot import *
+from core.analysis import *
+from core.re_and_globals import *
 
 py.sign_in('sjbrun','v1jdPUhNoRgRBpAOOx7Y')
 
 
-######  READING IN DATA AND SETTING UP PARAMETERS
+def import_data_with_date_index(datapath, ambient_channel_number):
+	''' Main import function '''
+	df = read_data_for_plot(datapath)
+	channels = get_channels(df)
+	amb = set_ambient(channels, ambient_channel_number)
+	df, errors = drop_errors(df, channels)
+	return df, channels, amb, errors
+
+def import_data_without_date_index(datapath, ambient_channel_number):
+	''' Main import function '''
+	df = read_data_for_analysis(datapath)
+	channels = get_channels(df)
+	amb = set_ambient(channels, ambient_channel_number)
+	df, errors = drop_errors(df, channels)
+	return df, channels, amb, errors
+
+
+#######################################
+### Helper functions ##################
+#######################################
 def read_data_for_plot(datapath):
 	''' Returns a dataframe of the agilent temperature data '''
 	date_parser = lambda x: pd.datetime.strptime(x, '%m/%d/%Y %H:%M:%S:%f')
@@ -32,7 +44,6 @@ def read_data_for_plot(datapath):
 
 def read_data_for_analysis(datapath):
 	''' Returns a dataframe of the agilent temperature data '''
-	date_parser = lambda x: pd.datetime.strptime(x, '%m/%d/%Y %H:%M:%S:%f')
 	return pd.read_csv(datapath)	
 
 def get_channels(df):
@@ -52,28 +63,4 @@ def drop_errors(df, channels):
 	errors = df_copy[~df_copy['Sweep #'].isin(df['Sweep #'].tolist())]
 	return df, errors
 
-def import_data(datapath, ambient_channel_number):
-	df = read_data_for_plot(datapath)
-	channels = get_channels(df)
-	amb = set_ambient(channels, ambient_channel_number)
-	df, errors = drop_errors(df, channels)
-	return df, channels, amb, errors
 
-
-## DATA IMPORT
-df, channels, amb, errors = import_data(DATAPATH, ambient_channel_number)
-
-## PLOT
-#plot_profile(TITLE, df, channels)
-
-## ANALYSIS
-df = read_data_for_analysis(DATAPATH)
-analyze_all_channels(df, channels, amb)
-
-
-## ambient
-# result_each_cycle, df_summary, ambient = ambient_analysis(df, channels, amb, UPPER_THRESHOLD, LOWER_THRESHOLD)
-
-# ## not_ambient
-# channel = channels[3]
-# df_summary2 = single_channel_analysis(df, channel, ambient)

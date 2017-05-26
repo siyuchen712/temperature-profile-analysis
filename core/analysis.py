@@ -12,23 +12,28 @@ from operator import itemgetter
 import itertools
 import xlsxwriter
 
-from ambient import *
-from not_ambient import *
+from core.ambient import *
+from core.not_ambient import *
 
-def analyze_all_channels(df, channels, amb):
+
+def analyze_all_channels(df, channels, amb, tc_channel_names, upper_threshold, lower_threshold):
 	writer = create_wb()
 	
 	## analyze ambient
-	result_each_cycle, df_summary_amb, ambient = ambient_analysis(df, channels, amb, UPPER_THRESHOLD, LOWER_THRESHOLD)
-	df_summary_amb.to_excel(writer, 'Amb '+str(amb))
+	result_each_cycle_amb, df_summary_amb, ambient = ambient_analysis(df, channels, amb, upper_threshold, lower_threshold)
+	result_each_cycle_amb.to_excel(writer, 'Amb '+str(amb))
 
 	### all other channels
 	for channel in channels:
 		print(channel)
 		if channel != amb:
-			df_summary_tc = pd.DataFrame()
-			df_summary_tc = single_channel_analysis(df, channel, ambient)
-			df_summary_tc.to_excel(writer, channel)
+			result_each_cycle, df_summary_tc = pd.DataFrame(), pd.DataFrame()
+			result_each_cycle, df_summary_tc = single_channel_analysis(df, channel, ambient, upper_threshold, lower_threshold)
+			if tc_channel_names[channel]:
+				tc_name = tc_channel_names[channel] + ' (' + channel.split(' ')[1] + ')'
+			else:
+				tc_name = channel
+			result_each_cycle.to_excel(writer, tc_name)
 	writer.save()
 
 def create_wb():

@@ -11,10 +11,10 @@ import plotly.graph_objs as go
 from operator import itemgetter
 import itertools
 
-from re_and_globals import *
+from core.re_and_globals import *
 
 
-def ambient_analysis(df, channels, amb, upper_thresh, lower_thresh):
+def ambient_analysis(df, channels, amb, upper_threshold, lower_threshold):
 	#########get the big gap of ambient (channel_1)
 	####Test for one channel
 	df_chan_Ambient = df[['Sweep #', 'Time', amb]]
@@ -26,8 +26,8 @@ def ambient_analysis(df, channels, amb, upper_thresh, lower_thresh):
 	df_chan_Ambient.insert(0,'Sweep_screen',pd.Series(sweep_screen, index=df_chan_Ambient.index).tolist())
 
 	#The index of all the points of temp out of threshold
-	High_index = df_chan_Ambient[channels[0]][df_chan_Ambient[channels[0]]> upper_thresh].index.tolist()
-	Low_index = df_chan_Ambient[channels[0]][df_chan_Ambient[channels[0]]< lower_thresh].index.tolist()
+	High_index = df_chan_Ambient[channels[0]][df_chan_Ambient[channels[0]]> upper_threshold].index.tolist()
+	Low_index = df_chan_Ambient[channels[0]][df_chan_Ambient[channels[0]]< lower_threshold].index.tolist()
 	point_index = []
 	for i in range(len(Low_index)):
 	    point_index.append(Low_index[i])
