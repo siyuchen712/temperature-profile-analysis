@@ -92,7 +92,7 @@ class ProfileUI(QWidget):
             for i, channel in enumerate(self.channels):
                 self.add_tc_field(i, channel, row)
                 row += 1
-            
+
             ## analyze button
             self.analyze_button = AnalyzeButton('Analyze!', self)
             self.grid.addWidget(self.analyze_button, row, 0, 1, 4)
@@ -154,11 +154,14 @@ class AnalyzeButton(QPushButton):
         ## Get user inputs
         datapath = self.ui.data_file_textfield.text()
         tolerance = int(self.ui.temp_tol_textfield.text())
-        upper_threshold = int(self.ui.upper_temp_textfield.text()) - tolerance
-        lower_threshold = int(self.ui.lower_temp_textfield.text()) + tolerance
+        upper_threshold = int(self.ui.upper_temp_textfield.text())
+        lower_threshold = int(self.ui.lower_temp_textfield.text())
         ambient_channel_number = convert_channel_to_num(self.ui.amb_chan_textfield.text())
         rate_adjustment = self.ui.adjustment_textfield.text()
         title = 'Temperature Profile Analysis'
+
+        if rate_adjustment:
+            rate_adjustment = float(self.ui.adjustment_textfield.text())/100.0
 
         ## Load TC component/location name labels
         tc_channel_names = {}  ## key: channel, value: tc_name
@@ -175,18 +178,18 @@ class AnalyzeButton(QPushButton):
         if datapath and upper_threshold and lower_threshold and ambient_channel_number and isinstance(tolerance, int):
             ### Do plot
             #df, channels, amb, errors = import_data_with_date_index(datapath, ambient_channel_number)  ## df time indexed
-            #plot_profile(title, df, channels)  ## plot with ploty
+            #plot_profile(title, df, channels, tc_channel_names)  ## plot with ploty
             
             ### Do analysis
             df, channels, amb, amb_errors = import_data_without_date_index(datapath, ambient_channel_number) ## df raw for analysis
-            analyze_all_channels(df, channels, amb, amb_errors, tc_channel_names, upper_threshold, lower_threshold, rate_adjustment)
+            analyze_all_channels(df, channels, amb, amb_errors, tc_channel_names, upper_threshold, lower_threshold, tolerance, rate_adjustment)
         else:
             print('\n', 'All user inputs must be filled before analysis can be conducted. Please fill in the required fields.')
 
 
 ### TC conversion helper
 def convert_channel_to_num(channel_number):
-    ''' channel_number input is a  string '''
+    ''' Channel_number input is a  string '''
     if len(channel_number) > 1:
         chan_num = int(channel_number[-2:])
     elif len(channel_number) == 1:
