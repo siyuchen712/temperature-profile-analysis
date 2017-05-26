@@ -33,9 +33,9 @@ def import_data_without_date_index(datapath, ambient_channel_number):
 	return df, channels, amb, errors
 
 
-#######################################
-### Helper functions ##################
-#######################################
+################################################
+############### Helper functions ###############
+################################################
 def read_data_for_plot(datapath):
 	''' Returns a dataframe of the agilent temperature data '''
 	date_parser = lambda x: pd.datetime.strptime(x, '%m/%d/%Y %H:%M:%S:%f')

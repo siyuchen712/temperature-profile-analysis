@@ -57,10 +57,16 @@ class ProfileUI(QWidget):
         self.grid.addWidget(self.temp_tol_label, 3, 0)
         self.grid.addWidget(self.temp_tol_textfield, 3, 1, 1, 1)
 
+        ## threshold component rate adjustment
+        self.adjustment_label = QLabel('Component rate adjustment (%):', self)
+        self.adjustment_textfield = QLineEdit(self)
+        self.grid.addWidget(self.adjustment_label, 4, 0)
+        self.grid.addWidget(self.adjustment_textfield, 4, 1, 1, 1)
+
         ## load tc button
         self.load_tc_button = QPushButton('Load TCs...', self)
-        self.grid.addWidget(self.load_tc_button, 4, 0, 1, 4)
-        self.load_tc_button.clicked.connect(lambda: self.populate_tc_field_group(5))
+        self.grid.addWidget(self.load_tc_button, 5, 0, 1, 4)
+        self.load_tc_button.clicked.connect(lambda: self.populate_tc_field_group(6))
         
         ## gui window properties
         self.setStyleSheet(open(self.stylesheet, "r").read())
@@ -72,25 +78,28 @@ class ProfileUI(QWidget):
 
     def populate_tc_field_group(self, row):
         ''' Populate GUI with user input TC analysis widgets '''
-        self.amb_chan_label = QLabel('Amb Temp Channel:', self)
-        self.amb_chan_textfield = QLineEdit(self)
-        self.grid.addWidget(self.amb_chan_label, row, 0)
-        self.grid.addWidget(self.amb_chan_textfield, row, 1, 1, 1)
-        row += 1
+        try:
+            self.retrieve_thermocouple_channels()
 
-        self.adjustment_label = QLabel('Component rate adjustment (%):', self)
-        self.adjustment_textfield = QLineEdit(self)
-        self.grid.addWidget(self.adjustment_label, row, 0)
-        self.grid.addWidget(self.adjustment_textfield, row, 1, 1, 1)
-        row += 1
-
-        self.retrieve_thermocouple_channels()
-
-        for i, channel in enumerate(self.channels):
-            self.add_tc_field(i, channel, row)
+            ## ambient temp channel field
+            self.amb_chan_label = QLabel('Amb Temp Channel:', self)
+            self.amb_chan_textfield = QLineEdit(self)
+            self.grid.addWidget(self.amb_chan_label, row, 0)
+            self.grid.addWidget(self.amb_chan_textfield, row, 1, 1, 1)
             row += 1
-        self.analyze_button = AnalyzeButton('Analyze!', self)
-        self.grid.addWidget(self.analyze_button, row, 0, 1, 4)
+
+            ## thermocouple fields
+            for i, channel in enumerate(self.channels):
+                self.add_tc_field(i, channel, row)
+                row += 1
+            
+            ## analyze button
+            self.analyze_button = AnalyzeButton('Analyze!', self)
+            self.grid.addWidget(self.analyze_button, row, 0, 1, 4)
+
+        except OSError as e: ## no datapath selected
+            print('\n', e)
+            print('Data load error -- Make sure you have selected a valid data file')
 
     def retrieve_thermocouple_channels(self):
         datapath = self.data_file_textfield.text()
@@ -147,11 +156,11 @@ class AnalyzeButton(QPushButton):
         tolerance = int(self.ui.temp_tol_textfield.text())
         upper_threshold = int(self.ui.upper_temp_textfield.text()) - tolerance
         lower_threshold = int(self.ui.lower_temp_textfield.text()) + tolerance
-        ambient_channel_number = int(self.ui.amb_chan_textfield.text())
+        ambient_channel_number = convert_channel_to_num(self.ui.amb_chan_textfield.text())
         rate_adjustment = self.ui.adjustment_textfield.text()
         title = 'Temperature Profile Analysis'
 
-        ## Load TC labels
+        ## Load TC component/location name labels
         tc_channel_names = {}  ## key: channel, value: tc_name
         for i, channel in enumerate(self.ui.channels):
             tc_channel_names[channel] = self.ui.tc_names[i].text()
@@ -162,13 +171,30 @@ class AnalyzeButton(QPushButton):
         print('Lower Threshold:', lower_threshold)
         print('Channels:', tc_channel_names)
 
-        ### Do plot
-        #df, channels, amb, errors = import_data_with_date_index(datapath, ambient_channel_number)  ## df time indexed
-        #plot_profile(title, df, channels)  ## plot with ploty
-        
-        ### Do analysis
-        df, channels, amb, errors = import_data_without_date_index(datapath, ambient_channel_number) ## df raw for analysis
-        analyze_all_channels(df, channels, amb, tc_channel_names, upper_threshold, lower_threshold)
+        ## if all required user inputs exist
+        if datapath and upper_threshold and lower_threshold and ambient_channel_number and isinstance(tolerance, int):
+            ### Do plot
+            #df, channels, amb, errors = import_data_with_date_index(datapath, ambient_channel_number)  ## df time indexed
+            #plot_profile(title, df, channels)  ## plot with ploty
+            
+            ### Do analysis
+            df, channels, amb, amb_errors = import_data_without_date_index(datapath, ambient_channel_number) ## df raw for analysis
+            analyze_all_channels(df, channels, amb, amb_errors, tc_channel_names, upper_threshold, lower_threshold, rate_adjustment)
+        else:
+            print('\n', 'All user inputs must be filled before analysis can be conducted. Please fill in the required fields.')
+
+
+### TC conversion helper
+def convert_channel_to_num(channel_number):
+    ''' channel_number input is a  string '''
+    if len(channel_number) > 1:
+        chan_num = int(channel_number[-2:])
+    elif len(channel_number) == 1:
+        chan_num = int(channel_number)
+    else:
+        chan_num = 1
+    return chan_num
+
 
 
 if __name__ == '__main__':

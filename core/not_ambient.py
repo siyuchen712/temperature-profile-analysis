@@ -203,7 +203,12 @@ def single_channel_analysis(df, channel, ambient, upper_threshold, lower_thresho
 	    result_each_cycle = result_each_cycle.round(2)
 
 
-	else:  ## not all cycles reached thresholds
+	elif not cycle_ls:  ##  none of the cycles reached
+		df_summary, result_each_cycle = pd.DataFrame(), pd.DataFrame()
+		## pd.DataFrame({1:'NO CYCLES REACH THE THRESHOLDS'}, [0])
+
+
+	else:  ## only some of the cycles reached thresholds
 	    consequtive_cycle = []
 	    for k, g in itertools.groupby(enumerate(cycle_ls), lambda x: x[1]-x[0] ) :
 	        consequtive_cycle.append(list(map(itemgetter(1), g)))
