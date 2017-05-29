@@ -33,7 +33,7 @@ def analyze_all_channels(df, channels, amb, amb_errors, tc_channel_names, upper_
     else: ## otherwise use tolerance used for ambient
         upper_threshold = amb_upper_threshold
         lower_threshold = amb_lower_threshold
-    import pdb; pdb.set_trace()
+        
     for channel in channels:
         print(channel)
         if channel != amb:
